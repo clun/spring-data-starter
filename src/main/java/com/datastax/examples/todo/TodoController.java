@@ -35,22 +35,18 @@ import com.datastax.oss.driver.api.core.DriverException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin(
   methods = {PUT, POST, GET, OPTIONS, DELETE, PATCH},
   maxAge = 3600,
-  allowedHeaders = {"x-requested-with", "origin", "content-type", "accept"},
+  //allowedHeaders = {"x-requested-with", "origin", "content-type", "accept"},
+  allowedHeaders = "*",
   origins = "*"
 )
 @RestController
 @RequestMapping("/api/v1/todos")
-@Tag(name = "Todos", description = "Implement CRUD operations for Todo Tasks")
 public class TodoController {
     
     /** Logger for the class. */
@@ -76,20 +72,9 @@ public class TodoController {
     /**
      * Retrieve all tasks (GET)
      */
-    @Operation(
-            summary = "Retrieve the complete list of Taskss", 
-            description = "List all records in the tables", 
-            tags = { "todos" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                         description = "The list has been retrieved even if empty no error", 
-                         content = @Content(array = @ArraySchema(schema = @Schema(implementation = TodoWebBean.class)))) })  
-    @RequestMapping(
-            value = "/",
-            method = GET,
-            produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/", method = GET, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TodoWebBean>> findAll(HttpServletRequest request) {
-        logger.info("List all task in the db: {}", rewriteUrl(request) + "?" + request.getQueryString());
+        logger.info("List all task in the db: {}", rewriteUrl(request));
         return ResponseEntity.ok(todoRepository.findAll()
                 .stream().map(dto -> new TodoWebBean(rewriteUrl(request) + dto.getUuid(), dto))
                 .collect(Collectors.toList()));
@@ -98,11 +83,6 @@ public class TodoController {
     /**
      * Delete all tasks (DELETE)
      */
-    @Operation(
-            summary = "Delete all tasks in one go", 
-            description = "Clear the storage", 
-            tags = { "todos", "delete" })
-    @ApiResponses(value = { @ApiResponse(responseCode = "204", description = "No results") } )  
     @RequestMapping(value = "/", method = DELETE)
     public ResponseEntity<Void> deleteAll(HttpServletRequest request) {
         logger.info("Delete all task in the db: {}", rewriteUrl(request) + "?" + request.getQueryString());
@@ -115,16 +95,6 @@ public class TodoController {
     /**
      * CREATE = Create a new Task (POST)
      */
-    @Operation(
-            summary = "Create a new task", 
-            description = "POST is the proper http verb when you cannot provide the full URL (including id)", 
-            tags = { "create" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", 
-                            description = "The task has been successfully created",
-                            content = @Content(schema = @Schema(implementation = TodoWebBean.class))),
-            @ApiResponse(responseCode = "400", description = "Title is blank but is mandatory"),
-            @ApiResponse(responseCode = "500", description = "An error occur in storage") })
     @RequestMapping(
             value = "/",
             method = POST,
@@ -132,10 +102,6 @@ public class TodoController {
             consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<TodoWebBean> create(HttpServletRequest request, 
             @RequestBody 
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Only field <b>title</b> is required in the following JSON object", 
-                    required = true, 
-                    content = @Content(schema = @Schema(implementation = TodoWebBean.class))) 
             TodoWebBeanRequest taskCreationRequest)
     throws URISyntaxException {
         Assert.notNull(taskCreationRequest, "You must provide a Task in BODY");
@@ -159,24 +125,11 @@ public class TodoController {
             value = "/{taskId}",
             method = GET,
             produces = APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Get details of a task if exists", 
-            description = "Retrieve a tasks based on its identifier", 
-            tags = { "Task" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = TodoWebBean.class))),
-            @ApiResponse(responseCode = "400", description = "UUID is blank or contains invalid characters (expecting valid UUID)"),
-            @ApiResponse(responseCode = "404", description = "Task not found") })
     public ResponseEntity<TodoWebBean> read(HttpServletRequest request,
-            @Parameter(name="taskId", 
-                     description="Unique identifier for the task",
-                     example = "6f6c5b47-4e23-4437-ada8-d0a6f79330a2", 
-                     required=true )
             @PathVariable(value = "taskId") String taskId) {
         logger.info("Find a task with its id {}", rewriteUrl(request) + "?" + request.getQueryString());
         Assert.hasLength(taskId, "TaskId id is required and should not be null");
-        Optional<TodoEntity> myTask = todoRepository.findById(UUID.fromString(taskId));
+        Optional<TodoEntity> myTask = todoRepository.findTodoById(UUID.fromString(taskId));
         // Routing Result
         if (!myTask.isPresent()) {
             logger.warn("Task with uid {} has not been found", taskId);
@@ -188,35 +141,18 @@ public class TodoController {
     /**
      * Update an existing Task (PATCH)
      */
-    @Operation(
-            summary = "Update an existing task", 
-            description = "PATCH when you have id and providing body", 
-            tags = { "update" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = TodoWebBean.class))),
-            @ApiResponse(responseCode = "400", description = "Json body not valid"),
-            @ApiResponse(responseCode = "404", description = "Task UUID not found") })
     @RequestMapping(
             value = "/{taskId}",
             method = PATCH,
             produces = APPLICATION_JSON_VALUE, 
             consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<TodoWebBean> update(HttpServletRequest request, 
-            @Parameter(name="taskId", required=true,
-            description="Unique identifier for the task",
-            example = "6f6c5b47-4e23-4437-ada8-d0a6f79330a2")
             @PathVariable(value = "taskId") String taskId,
-            @RequestBody 
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Update all fields if needed", 
-                    required = true, 
-                    content = @Content(schema = @Schema(implementation = TodoWebBeanRequest.class))) 
-    TodoWebBean taskBody)
+            @RequestBody TodoWebBean taskBody)
     throws URISyntaxException {
         Assert.notNull(taskBody, "You must provide a Task in BODY");
         logger.info("Updating task {}", taskId);
-        Optional<TodoEntity> myTask = todoRepository.findById(UUID.fromString(taskId));
+        Optional<TodoEntity> myTask = todoRepository.findTodoById(UUID.fromString(taskId));
         // Routing Result
         if (!myTask.isPresent()) {
             logger.warn("Task with uid {} has not been found", taskId);
@@ -246,7 +182,7 @@ public class TodoController {
             @PathVariable(value = "taskId") String taskId) {
         logger.info("Delete a task with its id {}", request.getRequestURL().toString());
         Assert.hasLength(taskId, "TaskId id is required and should not be null");
-        Optional<TodoEntity> myTask = todoRepository.findById(UUID.fromString(taskId));
+        Optional<TodoEntity> myTask = todoRepository.findTodoById(UUID.fromString(taskId));
         // Routing Result
         if (!myTask.isPresent()) {
             logger.warn("Task with uid {} has not been found", taskId);

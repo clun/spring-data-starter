@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface TodoRepository extends CassandraRepository<TodoEntity, UUID> {
     
     @Query("SELECT * FROM todo_tasks WHERE uid = ?0")
-    Optional<TodoEntity> findByTaskById(UUID taskid);
+    Optional<TodoEntity> findTodoById(UUID taskid);
     
 }
 
