@@ -41,12 +41,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @CrossOrigin(
   methods = {PUT, POST, GET, OPTIONS, DELETE, PATCH},
   maxAge = 3600,
-  //allowedHeaders = {"x-requested-with", "origin", "content-type", "accept"},
-  allowedHeaders = "*",
+  allowedHeaders = {"x-requested-with", "origin", "content-type", "accept"},
   origins = "*"
 )
 @RestController
-@RequestMapping("/api/v1/todos")
+@RequestMapping("/todos")
 public class TodoController {
     
     /** Logger for the class. */

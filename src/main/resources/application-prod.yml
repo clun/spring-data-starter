@@ -5,9 +5,9 @@ server.port: 8081
 #management.server.port: 8082
 
 spring.data.cassandra:
-  keyspace-name: ks_asset
-  username: ks_asset
-  password: ks_asset
+  keyspace-name: ${ASTRA_DB_KEYSPACE}
+  username: ${ASTRA_DB_USERNAME}
+  password: ${ASTRA_DB_PASSWORD}
   
   # Create the schema on the fly if it doesn't exist
   schema-action: CREATE_IF_NOT_EXISTS
@@ -20,4 +20,4 @@ spring.data.cassandra:
     init-query-timeout: 10s
 
 datastax.astra:
-  secure-connect-bundle: /Users/cedricklunven/Downloads/secure-connect-astrakathon-review.zip
+  secure-connect-bundle: ${ASTRA_DB_BUNDLE}
