@@ -5,11 +5,10 @@ This application uses Spring Data Cassandra and DataStax Astra to build a REST A
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer)
 
 # Table of Content
-- **[1.Create an Apache Cassandra DB-as-a-service with DataStax Astra](#1-create-an-apache-cassandra-db-as-a-service-with-datastax-astra)**
-- **[2.Copy your credentials from your Cassandra instance](#2-copy-your-credentials-from-your-cassandra-instance)**
+- **[1. Create an Apache Cassandra DB-as-a-service with DataStax Astra](#1-create-an-apache-cassandra-db-as-a-service-with-datastax-astra)**
+- **[2. Copy your credentials from your Cassandra instance](#2-copy-your-credentials-from-your-cassandra-instance)**
 - **[3. Run the application](#3-run-the-application-in-gitpod)**
 - **[4. Test the application](#4-use-the-application)**
-
 
 ## 1. Create an Apache Cassandra DB-as-a-service with DataStax Astra
 
