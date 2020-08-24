@@ -10,6 +10,9 @@ import java.time.Instant;
 @Data
 public class Order implements Serializable {
 
+    /** Serial */
+    private static final long serialVersionUID = -1054221139582396391L;
+
     @PrimaryKey
     private OrderPrimaryKey key;
 
